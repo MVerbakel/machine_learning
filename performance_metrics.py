@@ -20,6 +20,7 @@ def performance_metrics(clf, x_test, y_test, target_names):
     """
 
     y_pred = clf.predict(x_test)
+    y_proba = clf.predict_proba(x_test)
     y_prob = clf.predict_proba(x_test).transpose()[1]
 
     clf_accuracy = accuracy_score(y_true=y_test, y_pred=y_pred, normalize=True)
@@ -30,7 +31,7 @@ def performance_metrics(clf, x_test, y_test, target_names):
     f1_weighted = f1_score(y_true=y_test, y_pred=y_pred, average='weighted')
     recall_pos = recall_score(y_true=y_test, y_pred=y_pred, pos_label=1, average='binary')
     precision_pos = precision_score(y_true=y_test, y_pred=y_pred, pos_label=1, average='binary')
-    log_loss_score = log_loss(y_true=y_test, y_pred=y_pred, eps=1e-15, normalize=True)
+    log_loss_score = log_loss(y_true=y_test, y_pred=y_proba, eps=1e-15, normalize=True)
 
     metrics_df = pd.Series({'accuracy': clf_accuracy,
                             'roc_auc': roc_auc_macro,
@@ -43,7 +44,7 @@ def performance_metrics(clf, x_test, y_test, target_names):
                             'log_loss': log_loss_score})
 
     print('\nKey Metrics:')
-    print(metrics_df)
+    print(metrics_df.round(decimals=3))
 
     print('\nClassification Report:')
     print(classification_report(y_true=y_test, y_pred=y_pred, target_names=target_names))
@@ -161,12 +162,13 @@ def performance_plots(clf, x_test, y_test, target_names):
     ax3.set_ylim(0, 1)
 
     # ax4 = FPR, TPR by Probability Threshold
-    ax4.plot(fpr, thresh, label='FPR', linewidth=2, color='#fc4f30')
-    ax4.plot(tpr, thresh, label='TPR', linewidth=2, color='#30a2da')
+    ax4.plot(thresh, fpr, label='FPR', linewidth=2, color='#fc4f30')
+    ax4.plot(thresh, tpr, label='TPR', linewidth=2, color='#30a2da')
     ax4.set_title('False/True Positive Rate by Probability Threshold')
     ax4.set_xlabel('Probability Threshold')
     ax4.set_ylabel('Score')
-    ax4.set_xlim(0, 1)
+    ax4.invert_xaxis()
+    ax4.set_xlim(1, 0)
     ax4.set_ylim(0, 1)
     ax4.legend(loc=9, frameon=True, fontsize=8, ncol=2)
 
